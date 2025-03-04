@@ -233,3 +233,6 @@ When you remove the Deployment object, all pods and replica sets are removed.
 
 Deployment directly manages the ReplicaSet it creates.
 
+
+
+ 
