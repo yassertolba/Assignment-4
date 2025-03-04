@@ -100,6 +100,7 @@ This task combines theoretical and practical Kubernetes knowledge. It includes:
 
 - Ensure all YAML files are properly indented and validated before applying them to your cluster.
 - Use `minikube kubectl -- describe` and `minikube kubectl -- logs` commands to debug any issues.
+- Use aliase `aliase k = minikube kubectl --` to make it easy to write the commands
 - For persistent storage tasks, ensure your cluster supports the required storage class and access modes.
 
 ---
