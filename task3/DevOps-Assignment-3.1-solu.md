@@ -36,7 +36,19 @@ The Kubernetes cluster runs on top of either a physical or virtual environment.
 
 ![Master node components](master-node-components.png)
 
+### What Does the Master Node Do?
 
+Master node components make scheduling and controlling decisions related to the cluster.
+
+Simply put, the master node manages the whole Kubernetes cluster, which includes the worker nodes.
+
+The following are a few examples of what master nodes do:
+
+- Suppose a pod needs to be scheduled;
+  - that scheduling decision will be made by the master node component.
+
+- Suppose a pod is defined to have three replicas, but one pod has gone down.
+  - The master node component will ensure that a new replica is created so that the specification of three replicas is met.
 
 
 
