@@ -5,6 +5,16 @@
 
 ## Table of Contents
 
+1. [Theory Questions (10 points)](#theory-questions-10-points)
+   - [a) Kubernetes Architecture](#a-kubernetes-architecture)
+   - [b) Deployments and Services](#b-deployments-and-services)
+   - [c) Scaling and Autoscaling](#c-scaling-and-autoscaling)
+
+2. [Practical Task (15 points)](#practical-task-15-points)
+   - [a) Create a Deployment](#a-create-a-deployment)
+   - [b) Service Exposure](#b-service-exposure)
+   - [c) Scaling with Autoscaling](#c-scaling-with-autoscaling)
+
 ## **Theory Questions (10 points)**
 
 **a) Kubernetes Architecture**  
@@ -233,7 +243,6 @@ When you remove the Deployment object, all pods and replicasets are removed.
 
 Deployment directly manages the ReplicaSet it creates.
 
-
 ### **How do deployments ensure high availability of applications?**
 
 `deployments` use `ReplicaSet` to ensure high availability of the applications.
@@ -244,6 +253,288 @@ Deployment directly manages the ReplicaSet it creates.
 
 ## **What are the different types of services in Kubernetes (e.g., ClusterIP, NodePort, LoadBalancer)? When would you use each type?**
 
+### **ClusterIP**
+
+With the Service type ClusterIP, Kubernetes assigns an IP address to the Service that is internal to the cluster.
+
+That's why the Service type ClusterIP is used when you want to expose your application within the cluster and not outside of the cluster.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-clusterip-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: my-app
+```
+
+### **NodePort**
+
+Exposes the Service on a static port on each node's IP address.
+
+Allows external traffic to access the Service by targeting any node's IP address and the assigned NodePort.
+
+Automatically creates a ClusterIP Service to route traffic internally.
+
+Use when you need external access but don't have a LoadBalancer.
+
+Suitable for development, testing, or environments without cloud load balancers.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-nodeport-service
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30007
+  selector:
+    app: my-app
+```
+
+### **LoadBalancer**
+
+Exposes the Service externally using a cloud provider's load balancer.
+
+Automatically assigns an external IP address and routes traffic to the Service.
+
+Creates a NodePort and ClusterIP Service internally.
+
+Use when you need to expose a Service to the public internet.
+
+Best for production environments with cloud provider support.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-loadbalancer-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: my-app
+```
+
+### **ExternalName**
+
+Maps a Service to an external DNS name (e.g., a service outside the cluster).
+
+Does not create a ClusterIP or proxy traffic. Instead, it acts as a DNS alias.
+
+Use when you need to map a Service to an external resource.
+
+Useful for integrating with external APIs or databases.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-externalname-service
+spec:
+  type: ExternalName
+  externalName: my.external-service.com
+```
+
+### **Comparison Table**
+
+| **Service Type** | **Access Scope**       | **Use Case**                                                                 | **Example**                                   |
+|------------------|------------------------|-----------------------------------------------------------------------------|-----------------------------------------------|
+| **ClusterIP**    | Internal to the cluster| Exposing services for internal communication.                               | Database service for backend microservices.   |
+| **NodePort**     | External via node IP   | Exposing services for external access in development or testing.            | Web application during development.           |
+| **LoadBalancer** | External via cloud LB  | Exposing services to the public internet in production environments.        | Production web application.                   |
+| **ExternalName** | External DNS           | Mapping a Kubernetes Service to an external service.                        | External API or database.                     |
+
+## c) Scaling and Autoscaling
+
+### **How does Kubernetes handle scaling? Explain the concept of Horizontal Pod Autoscaler and how it responds to workload changes.**
+
+Scaling in Kubernetes can be done manually or automatically using the Horizontal Pod Autoscaler (HPA)
+
+#### **1. Manual Scaling**
+
+updating the replicas field in the YAML configuration or using the `kubectl scale` command.
+
+```bash
+kubectl scale <<<DEPLOYMENT_NAME>>> --replicas=10
+```
+
+#### **2. Automatic Scaling**
+
+Kubernetes provides Horizontal Pod Autoscaler (HPA) to automatically scale the number of Pods based on observed metrics like CPU utilization, memory usage, or custom metrics.
+
+This ensures that your application can handle increased traffic without manual intervention and reduces resource usage during low traffic periods.
+
+In your Kubernetes cluster, if horizontal autoscaling is enabled, you can configure autoscaling using the `kubectl autoscale` command.
+
+The following command will set autoscaling to maintain an average CPU utilization of 40 percent across all pods. This autoscaler configuration will create a maximum number of 15 pods and a minimum number of 10 pods to maintain 40 percent CPU utilization.
+
+```bash
+kubectl autoscale deploy <<<DEPLOYMENT_NAME>>> --min=10 --max=15 --cpu-percent=40
+```
+
+If at any point in time you want to check the current status of the autoscaler, then you can use the `kubectl get hpa` command.
+
+---
+
+## **Practical Task (15 points)**
+
+**a) Create a Deployment**
+**b) Service Exposure**
+**c) Scaling with Autoscaling**
+
+## a) Create a Deployment  
+
+- Create a Kubernetes deployment that runs 3 replicas of the web server container from Assignment 2.
+- Ensure that all replicas are load-balanced across the cluster using a ClusterIP service.
+- Describe how you would test the load balancing functionality.
+
+### **deploy-web-server.yaml**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-web-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: deploy-web-server-c
+        image: nginx
+        ports:
+        - containerPort: 80
+```
+
+### **clusterip-web-server.yaml**
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-web-server
+spec:
+  type: ClusterIP
+  selector:
+    app: web-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+```bash
+yasser@kane:~/k8s$ k create -f assignment-4/task-3.1/
+service/service-web-server created
+deployment.apps/deploy-web-server created
+
+yasser@kane:~/k8s$ k get deploy deploy-web-server
+NAME                READY   UP-TO-DATE   AVAILABLE   AGE
+deploy-web-server   3/3     3            3           4m2s
+
+yasser@kane:~/k8s$ k get svc service-web-server
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service-web-server   ClusterIP   10.97.156.144   <none>        80/TCP    4m20s
+```
+
+---
+
+### **b) Service Exposure**
+
+- Expose your deployment to the outside world using a NodePort service. Map the external port to 80 on the Kubernetes cluster.
+- Verify the service is reachable by accessing the external IP and port from your browser.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-server
+spec:
+  type: NodePort
+  selector:
+    app: web-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 31111
+```
+
+```bash
+yasser@kane:~/k8s$ k create -f assignment-4/task-3.1/nodeport-web-server.yaml 
+service/web-server created
+
+yasser@kane:~/k8s$ k get svc web-server
+NAME         TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+web-server   NodePort   10.105.216.143   <none>        80:31111/TCP   82s
+
+yasser@kane:~/k8s$ minikube service web-server
+|-----------|------------|-------------|---------------------------|
+| NAMESPACE |    NAME    | TARGET PORT |            URL            |
+|-----------|------------|-------------|---------------------------|
+| default   | web-server |          80 | http://192.168.49.2:31111 |
+|-----------|------------|-------------|---------------------------|
+🎉  Opening service default/web-server in default browser...
+👉  http://192.168.49.2:31111
+```
+
+![VS-code-forward-port](VS-code-forward-port.png)
+
+![nginx-web-page](nginx-web-page.png)
+
+---
+
+## **c) Scaling with Autoscaling**
+
+- Set up the Kubernetes Horizontal Pod Autoscaler (HPA) to automatically scale the web server deployment up to 10 replicas when CPU utilization exceeds 70%.
+
+- Simulate high CPU usage using kubectl or a stress test tool, and observe how Kubernetes scales the pods.
+
+```bash
+yasser@kane:~/k8s$ k autoscale deploy deploy-web-server --min=3 --max=10 --cpu-percent=70
+horizontalpodautoscaler.autoscaling/deploy-web-server autoscaled
+
+yasser@kane:~/k8s$ k get hpa deploy-web-server
+NAME                REFERENCE                      TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+deploy-web-server   Deployment/deploy-web-server   cpu: <unknown>/70%   3         10        3          40s
+```
+
+### **To Simulate high CPU usage**
+
+```bash
+yasser@kane:~/k8s$ k get pods
+NAME                                 READY   STATUS             RESTARTS       AGE
+deploy-web-server-6849b7b794-5w29h   1/1     Running            0              37m
+deploy-web-server-6849b7b794-bzz7r   1/1     Running            0              37m
+deploy-web-server-6849b7b794-wmcwx   1/1     Running            0              37m
+
+yasser@kane:~/k8s$ k exec -it deploy-web-server-6849b7b794-bzz7r -- /bin/sh
+# apt-get update && apt-get install -y stress
+[omitted for brevity]
+Setting up stress (1.0.7-1) ...
+
+# stress --cpu 2 --timeout 300s
+stress: info: [158] dispatching hogs: 2 cpu, 0 io, 0 vm, 0 hdd
 
 
- 
+yasser@kane:~/k8s$ k get hpa deploy-web-server --watch
+NAME                REFERENCE                      TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+deploy-web-server   Deployment/deploy-web-server   cpu: <unknown>/70%   3         10        3          14m
+```
