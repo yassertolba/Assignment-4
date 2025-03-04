@@ -34,7 +34,7 @@ The kube-apiserver component is the key component of the control plane or master
 
 The Kubernetes cluster runs on top of either a physical or virtual environment.
 
-![Master node components](master-node-components.png)
+![Master node components](master-node-components.png)  
 ****Figure 2.*** Master node components*
 
 ### **What Does the Master Node Do?**
@@ -144,7 +144,7 @@ The cloud-controller-manager component was added to the Kubernetes architecture 
 
 Worker node is a kubernetes cluster run containerized applications.
 
-![Worker node components](Worker-node-components.png)
+![Worker node components](Worker-node-components.png)  
 ****Figure 3.*** Worker node components*
 
 ### Worker Node Components
