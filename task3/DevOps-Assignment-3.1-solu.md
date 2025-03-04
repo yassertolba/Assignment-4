@@ -389,9 +389,9 @@ If at any point in time you want to check the current status of the autoscaler, 
 
 ## **Practical Task (15 points)**
 
-**a) Create a Deployment**
-**b) Service Exposure**
-**c) Scaling with Autoscaling**
+**a) Create a Deployment**  
+**b) Service Exposure**  
+**c) Scaling with Autoscaling**  
 
 ## a) Create a Deployment  
 
