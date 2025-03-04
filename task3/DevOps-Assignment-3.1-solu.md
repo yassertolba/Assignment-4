@@ -229,9 +229,20 @@ Using the Deployment object, you describe the desired deployment state of your a
 
 When you create a Deployment object for the first time, a new set of pods and a new ReplicaSet are created.
 
-When you remove the Deployment object, all pods and replica sets are removed.
+When you remove the Deployment object, all pods and replicasets are removed.
 
 Deployment directly manages the ReplicaSet it creates.
+
+
+### **How do deployments ensure high availability of applications?**
+
+`deployments` use `ReplicaSet` to ensure high availability of the applications.
+
+`ReplicaSet` guarantees the availability of a specified number of running pods.
+
+---
+
+## **What are the different types of services in Kubernetes (e.g., ClusterIP, NodePort, LoadBalancer)? When would you use each type?**
 
 
 
